@@ -1,2 +1,2 @@
-Walkthrough video: <PASTE UNLISTED LOOM/YOUTUBE LINK HERE>
+Walkthrough video: https://drive.google.com/file/d/1tVlnET1CKiQFBuIZXuvfHRFKc7LVDOC_/view
 Live app: https://ajaia-docs-two-omega.vercel.app

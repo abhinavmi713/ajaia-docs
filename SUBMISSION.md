@@ -2,7 +2,7 @@
 
 **Live app:** https://ajaia-docs-two-omega.vercel.app
 **Source:** https://github.com/abhinavmi713/ajaia-docs (also in the Drive folder)
-**Walkthrough video:** see `VIDEO_URL.txt`
+**Walkthrough video:** https://drive.google.com/file/d/1tVlnET1CKiQFBuIZXuvfHRFKc7LVDOC_/view (also in `VIDEO_URL.txt`)
 
 ## Test accounts (mocked login: click an account card, no password)
 | User | Email | Starting state |
@@ -21,13 +21,13 @@
 ## What's included (Drive folder)
 | Item | File |
 |---|---|
-| Source code | the `ajaia-docs/` folder (same as the GitHub repo) |
+| Source code | `ajaia-docs-source.zip` (same as the GitHub repo; no `node_modules` or `.env`) |
 | Setup and run instructions | `README.md` |
 | Architecture note | `ARCHITECTURE.md` |
 | AI workflow note | `AI_WORKFLOW.md` (summary) and `NOTES.md` (step-by-step log) |
 | This file | `SUBMISSION.md` |
-| Walkthrough video URL | `VIDEO_URL.txt` |
-| Manual test checklist | `MANUAL_TESTS.md` |
+| Walkthrough video URL | `VIDEO_URL.txt` (the video file is also in the folder) |
+| Manual test checklist | `MANUAL_TESTS.md` inside the source zip |
 | Automated tests | `tests/` (Vitest) and `scripts/smoke-acl.mjs` (HTTP access checks) |
 
 No extra setup or screenshots are needed: the live URL plus the seeded accounts cover every flow.
