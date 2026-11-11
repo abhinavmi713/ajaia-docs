@@ -1,6 +1,7 @@
 # Submission — Ajaia Docs (Abhinav Kumar)
 
 **Live app:** https://ajaia-docs-two-omega.vercel.app
+**Drive folder (all deliverables):** https://drive.google.com/drive/folders/1FpI0uwvT5ZHomne6c2M1PZQ9p6nApKTn
 **Source:** https://github.com/abhinavmi713/ajaia-docs (also in the Drive folder)
 **Walkthrough video:** https://drive.google.com/file/d/1tVlnET1CKiQFBuIZXuvfHRFKc7LVDOC_/view (also in `VIDEO_URL.txt`)
 
