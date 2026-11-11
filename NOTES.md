@@ -7,7 +7,7 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 ## Step 0 — Scope & stack (≈0–10 min)
 - **AI suggested:** restated "done", MUST/NICE/CUT table, two stacks: (A) Next.js + TipTap + Prisma + Neon on Vercel, (B) Vite + Express + SQLite on Render. Recommended A because Render's free disk is ephemeral (SQLite would be wiped on redeploy) and free services sleep (~50s cold start for reviewers).
 - **I chose:** A, plus the recommended defaults: dropdown mocked login with signed cookie, debounced autosave, share table with a `role` column defaulting to `editor`, Vitest on a pure permission function.
-- **Changed/rejected:** _(add yours)_
+- **Changed/rejected:** set a hard 3h budget (brief allows 4–6h) and a feature freeze at 140 min.
 - **Verified:** n/a (planning).
 
 ## Step 1 — Scaffold (≈10–20 min)
@@ -16,7 +16,7 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
   - Pinned **Prisma 6** instead of latest 7 (7 requires driver adapters + `prisma.config.ts`; 6 is the boring, known path under time pressure).
   - npm peer conflict: vitest 5 wants `@types/node` ≥22 → bumped `@types/node` to 22 rather than using `--legacy-peer-deps`.
   - Next 16 has breaking changes (route `params` is a Promise; `middleware` renamed to `proxy`). AI read the bundled docs in `node_modules/next/dist/docs` before writing code. Decided **not** to use proxy for auth: checks live in the server code that touches data, so they can't be bypassed by a matcher mistake.
-- **Verified:** _(fill in after `npm run dev` shows the page)_
+- **Verified:** `npm run dev` served the login page; typecheck + lint clean.
 
 ## Step 2 — Schema, mocked auth, seed, "hello" pages (≈20–30 min)
 - **Schema:** `User`, `Document` (content = TipTap JSON in a `Json` column), `DocumentShare` (unique `(documentId, userId)`, `role` default `editor`, cascade deletes).
@@ -24,7 +24,7 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **Seed:** idempotent upserts (alice/bob/carol@demo.com) + a "Welcome" doc owned by Alice and shared with Bob, so reviewers see sharing instantly.
 - **Build:** `prisma generate && prisma migrate deploy && prisma db seed && next build` — migrations + seed run on every Vercel deploy (safe because both are idempotent).
 - **AI caught:** default Next `.gitignore` has `.env*`, which would also ignore `.env.example` → added `!.env.example`.
-- **Verified:** `tsc --noEmit` and `eslint` clean. _(Fill in: local login works as Alice/Bob; Vercel URL shows "Hello, <name>".)_
+- **Verified:** `tsc --noEmit` and `eslint` clean; local login as Alice showed her documents (Step 4). Early "hello" deploy was folded into the first full deploy (Step 5) because the editor was ready by then.
 
 ## Step 3 — Doc list, editor, autosave, sharing API (≈35–55 min)
 - **Access control:** `src/lib/permissions.ts` is a pure function (`getRole` / `can` / `denialStatus`). Every API route goes through `loadDocFor(id, user, action)` in `src/lib/http.ts`; pages use the same `getRole`. Strangers get **404** (don't leak existence), collaborators attempting owner-only actions get **403**.
@@ -34,7 +34,7 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **Pulled forward:** share API + panel were cheap once the permission layer existed, so built them now instead of at 100 min.
 - **AI mistakes caught:** Prisma `Json` type mismatch with zod output (cast to `InputJsonValue`); React Compiler lint flagged a self-referencing `useCallback` in autosave → refactored to a ref-based scheduler; dropped a CSS placeholder rule that needed an extension we don't load.
 - **Tests:** `tests/permissions.test.ts` — 9 Vitest cases (owner/editor/viewer/stranger, 404 vs 403 mapping). `npm test` → 9 passed.
-- **Verified:** tsc + eslint clean, tests pass. _(Fill in: manual browser check.)_
+- **Verified:** tsc + eslint clean, tests pass; browser check in Step 4.
 
 ## Step 4 — Migrate, local verification (≈55–75 min)
 - Ran `prisma migrate dev --name init` + seed against Neon.
@@ -57,3 +57,8 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **I reported:** a new doc showed "Untitled document" and an empty page with no cue to name it or start typing.
 - **Fix:** new docs auto-focus + select the title (type a name immediately); Enter in the title saves it and moves the cursor into the body; dashed hover border signals the title is editable; body placeholder "Start typing your document…" via TipTap `Placeholder` (client-only, not part of the stored schema).
 - **Verified in Chrome:** new doc → title focused and fully selected; typed name + Enter → title saved, focus in body, body text autosaved. An apparent failure was the automation typing before the deferred focus — confirmed via `document.activeElement` before changing anything else.
+
+## Step 7 — My corrections to AI output (process)
+- **Rejected AI commit style:** AI wrote a long multi-line commit message with a "Co-Authored-By: Claude" trailer and pushed it. I stopped it and had it amended to a short one-line message (force-push guarded with an explicit lease on the old SHA). All later commits are one line.
+- **Secrets boundary:** I pasted DB connection strings into `.env` and Vercel myself; AI only generated the session secret locally and verified env *key names*, never values.
+- **Ran the full manual checklist myself** (`MANUAL_TESTS.md`, 8 areas, two browser windows for two users) — all passed after the Step 6 fix.
