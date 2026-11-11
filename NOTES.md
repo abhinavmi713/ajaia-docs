@@ -43,3 +43,12 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **False alarm I didn't "fix":** an earlier "bold doesn't work" was my own mis-aimed test clicks (coordinate scaling), not an app bug — confirmed by clicking via element refs before changing code.
 - **Access-control smoke test** (`scripts/smoke-acl.mjs`, `npm run smoke:acl`): 13 HTTP checks against the running server with signed cookies for Alice/Bob/Carol — editor edit 200; editor rename/share/delete 403; stranger edit + page 404; empty title, bad content, bad email, self-share 400; unknown user 404; missing/forged cookie 401. **All 13 matched.**
 - **Trade-off noted:** local dev and production share one Neon DB (no time for a separate Neon branch). Cleaned test docs after verifying.
+
+## Step 5 — Deploy + file import (≈80–115 min)
+- **Deploy:** Vercel project connected to GitHub (Vercel GitHub App limited to *only* this repo + my existing one). Env vars pasted by me; AI never handled the DB password/secret. Vercel required an email identity check (done by me). Build ran migrate + seed; deployed in 55 s.
+- **Gotcha caught:** `ajaia-docs.vercel.app` is **someone else's** project (different page title). Real production URL: **https://ajaia-docs-two-omega.vercel.app**. Verified by content, not by assuming the name.
+- **Prod verification:** `BASE_URL=<prod> npm run smoke:acl` → all 13 access checks match in production.
+- **Import (`src/lib/import.ts`, `POST /api/import`):** `.txt` (blank line = paragraph, HTML-escaped), `.md` (marked → HTML), `.docx` (mammoth → HTML); all converted server-side with TipTap's `generateJSON` using the **same extension list as the editor**, so imported content always fits the schema and unknown HTML (script/iframe) is dropped. Limits: 2 MB, type allow-list, empty/binary detection; checked on client (fast feedback) and server (authoritative). UI states supported types under the button.
+- **Real bug found by a test:** mammoth silently drops underline by default → added `styleMap: ["u => u"]`. Built a real `.docx` fixture with JSZip (`scripts/make-docx-fixture.cjs`) instead of mocking mammoth.
+- **Tests:** 16 passing (9 permission + 7 import incl. real docx, XSS-in-markdown, size/type errors). HTTP check of `/api/import`: docx/md → 201 with correct title + structure; png → 400; no file → 400; >2 MB → 413. Test docs deleted afterwards.
+- **Added:** owner-only Delete button in editor (confirm dialog). React Compiler lint caught a declaration-order issue → moved function below the refs.

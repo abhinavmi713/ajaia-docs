@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { DocList } from "@/components/DocList";
 import { NewDocButton } from "@/components/NewDocButton";
+import { ImportButton } from "@/components/ImportButton";
 
 export default async function Home() {
   const user = await requireUser();
@@ -26,7 +27,10 @@ export default async function Home() {
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold text-slate-900">Documents</h1>
-          <NewDocButton />
+          <div className="flex items-start gap-3">
+            <ImportButton />
+            <NewDocButton />
+          </div>
         </div>
         <DocList
           title="Owned by me"

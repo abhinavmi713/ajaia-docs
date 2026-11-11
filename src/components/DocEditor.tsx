@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { editorExtensions } from "@/lib/editor-extensions";
@@ -22,6 +23,7 @@ export function DocEditor(props: {
   const { id, role } = props;
   const isOwner = role === "owner";
   const canEdit = role !== "viewer";
+  const router = useRouter();
 
   const [status, setStatus] = useState<SaveStatus>("saved");
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +92,18 @@ export function DocEditor(props: {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [status]);
 
+  async function deleteDoc() {
+    if (!window.confirm("Delete this document for everyone? This cannot be undone.")) return;
+    const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      if (timer.current) clearTimeout(timer.current);
+      pending.current = null;
+      setStatus("saved");
+      router.push("/");
+      router.refresh();
+    } else setError((await res.json().catch(() => ({}))).error ?? "Delete failed");
+  }
+
   async function saveTitle() {
     const next = title.trim();
     if (next === savedTitle.current) return setTitle(next);
@@ -145,6 +159,11 @@ export function DocEditor(props: {
               {!isOwner && <span>· Owned by {props.owner.name}</span>}
             </div>
           </div>
+          {isOwner && (
+            <button onClick={deleteDoc} className="text-sm text-slate-500 hover:text-red-600 px-2" title="Delete document">
+              Delete
+            </button>
+          )}
           <SharePanel docId={id} isOwner={isOwner} owner={props.owner} initialShared={props.sharedWith} />
         </div>
         {error && (
