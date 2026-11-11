@@ -23,9 +23,9 @@ One repo, one deploy, no separate API service, no CORS.
 |---|---|---|
 | **Next.js + Neon + Vercel** | Free and *persistent* (Render's free disk would wipe SQLite on redeploy), no cold starts for reviewers, a single deploy | Some Next 16 learning curve (async `params`, default `cacheComponents`, which I turned off because every page is per-user and dynamic) |
 | **Store TipTap JSON, not HTML** | Structured content round-trips formatting losslessly and can be validated. The editor and the importer share one schema (`editor-extensions.ts`) | Not human-readable in the DB; exporting to HTML/MD would need a converter (TipTap provides one) |
-| **Pure permission function** (`permissions.ts`) | The single source of truth for owner / editor / viewer. Every route goes through `loadDocFor()`, so there's no ad-hoc checking. Trivially unit-testable | Roles are coarse (by design) |
+| **Pure permission function** (`permissions.ts`) + **viewer/editor roles** | The single source of truth for owner / editor / viewer. The share panel sets roles via an upsert, so the same endpoint adds or changes access. Every route goes through `loadDocFor()`, so there's no ad-hoc checking. Trivially unit-testable | Roles are coarse (by design) |
 | **404 for no access, 403 for wrong role** | Strangers can't tell whether a doc exists; collaborators get an honest "owner only" | — |
-| **Mocked auth with a signed cookie** | The brief allows mocked auth. A dropdown makes reviewing two-user flows fast. An HS256 JWT in an httpOnly cookie means the server never trusts a client-sent user id | No passwords. Anyone can act as any demo user, which is acceptable for a demo and documented |
+| **Mocked auth with a signed cookie** | The brief allows mocked auth. One-click account cards make reviewing two-user flows fast. An HS256 JWT in an httpOnly cookie means the server never trusts a client-sent user id | No passwords. Anyone can act as any demo user, which is acceptable for a demo and documented |
 | **Auth checks in data code, not `proxy` (middleware)** | Checks sit next to the queries, so a path-matching mistake can't expose a route | Slight repetition (`requireUser()` per page) |
 | **Debounced autosave (800 ms)** | Feels like Docs, with no "forgot to save". One request in flight at a time; it always sends the latest state; on failure it keeps the content and offers Retry | Last write wins between two concurrent editors (see "not built") |
 | **Server-side import via TipTap `generateJSON`** | `.md` (marked) and `.docx` (mammoth) become HTML, then the editor schema. Unknown or unsafe HTML (script, iframe, onerror) is dropped by the schema | Complex Word features (tables, images, comments) are dropped |
@@ -38,8 +38,8 @@ One repo, one deploy, no separate API service, no CORS.
 - The UI shows inline errors (share panel, import, rename), a save-failure banner with Retry, a friendly 404 page, and a leave-page warning.
 
 ## Testing
-- **Unit (Vitest, 16):** the permission matrix and HTTP status mapping; import of txt/md/docx (with a real `.docx` fixture), HTML escaping, script stripping, and size/type errors.
-- **HTTP smoke (`npm run smoke:acl`, 13 checks):** run against both local and **production**. It covers editor vs owner vs stranger, validation, and forged or missing cookies.
+- **Unit (Vitest, 22):** the permission matrix and HTTP status mapping; share-role validation (an `owner` role can't be granted); import of txt/md/docx (with a real `.docx` fixture), HTML escaping, script stripping, and size/type errors.
+- **HTTP smoke (`npm run smoke:acl`, 19 checks):** run against both local and **production**. It covers owner vs editor vs viewer vs stranger, validation, revoke, and forged or missing cookies.
 - **Manual:** the [MANUAL_TESTS.md](MANUAL_TESTS.md) checklist, run in two browser windows.
 
 ## What I prioritized, and what I didn't build
@@ -49,13 +49,11 @@ One repo, one deploy, no separate API service, no CORS.
 - **Real-time co-editing** (CRDT/Yjs and websockets). This is the biggest piece, and it doesn't fit 3 hours on serverless.
 - **Conflict detection.** Two simultaneous editors means last write wins. Next step: send `updatedAt` with each save and return 409 if it's stale.
 - **Real authentication**, signup and password reset.
-- **Viewer role in the UI.** The model and permission rules already support `viewer`; only a role picker is missing.
 - Comments, version history, export, search, folders, images and tables.
 - **A separate dev database.** Local and production share one Neon DB for speed; a Neon branch would fix that.
 
 ## With 2–4 more hours
-1. Viewer/editor role picker in the share panel (backend and tests already exist), ~30 min.
-2. Stale-write protection (`updatedAt` → 409 → "reload or overwrite" prompt), ~45 min.
-3. Export to Markdown/PDF (TipTap JSON → HTML → MD), ~45 min.
-4. Presence indicator ("Bob is viewing") via polling, then real-time with Yjs + a websocket host.
-5. Playwright end-to-end test of the two-user sharing flow, and a separate Neon branch for dev/preview.
+1. Stale-write protection (`updatedAt` → 409 → "reload or overwrite" prompt), ~45 min.
+2. Export to Markdown/PDF (TipTap JSON → HTML → MD), ~45 min.
+3. Presence indicator ("Bob is viewing") via polling, then real-time with Yjs + a websocket host.
+4. Playwright end-to-end test of the two-user sharing flow, and a separate Neon branch for dev/preview.

@@ -6,8 +6,8 @@ Run locally (`npm run dev`, http://localhost:3000) or against the live URL. Test
 | # | Steps | Expected |
 |---|---|---|
 | 1.1 | Open `/` while signed out | Redirects to `/login` |
-| 1.2 | Login page | Dropdown lists Alice, Bob, Carol; note says auth is mocked |
-| 1.3 | Choose **Alice** → Sign in | Lands on Documents; header shows "Alice Anders (alice@demo.com)" |
+| 1.2 | Login page | Three account cards (Alice, Bob, Carol) with hints; note says auth is mocked |
+| 1.3 | Click the **Alice** card | Lands on Documents; header shows "Alice Anders (alice@demo.com)" |
 | 1.4 | Refresh | Still signed in (cookie persists) |
 | 1.5 | DevTools → Application → Cookies | `ajaia_session` is **HttpOnly** |
 | 1.6 | Sign out | Back to `/login`; visiting `/` redirects to login again |
@@ -49,6 +49,8 @@ Run locally (`npm run dev`, http://localhost:3000) or against the live URL. Test
 | 4.7 | Bob opens it | Status line says "Owned by Alice Anders"; title is **read-only**; no Delete button; button says **People** |
 | 4.8 | Bob edits text, waits for saved | Alice refreshes → sees Bob's edit |
 | 4.9 | Copy the doc URL → sign in as **Carol** (private window) → paste URL | "Document not found" page (404, doesn't reveal it exists) |
+| 4.11 | Alice → Share → add `carol@demo.com` as **Can view** | Carol (private window): "Can view" in her list; doc opens read-only, no toolbar, "You can view" badge + banner |
+| 4.12 | Alice changes Carol to **Can edit** in the dropdown | Carol refreshes → toolbar appears, can edit |
 | 4.10 | Alice → Share → **Remove** Bob | Bob refreshes the doc → "Document not found"; gone from his list |
 
 ## 5. File import
@@ -80,7 +82,7 @@ Use **Import file** on the Documents page. Hint under button: ".txt, .md or .doc
 
 ## 8. Automated checks
 ```bash
-npm test                  # 16 unit tests (permissions + import)
-npm run smoke:acl         # 13 HTTP access-control checks (dev server must be running)
+npm test                  # 22 unit tests (permissions, roles, import, helpers)
+npm run smoke:acl         # 19 HTTP access-control checks (dev server must be running)
 npx tsc --noEmit && npm run lint
 ```

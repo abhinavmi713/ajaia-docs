@@ -10,13 +10,13 @@ A lightweight collaborative document editor inspired by Google Docs, built for t
 | Bob Brown | bob@demo.com | Sees the welcome doc under **Shared with me** |
 | Carol Chen | carol@demo.com | No access to anything by default (use her to test 404) |
 
-Login is **mocked**: choose a user from the dropdown, no password. The session is still a real HMAC-signed, httpOnly cookie. Use a normal window plus an incognito window to be two users at once.
+Login is **mocked**: click a demo account card, no password. The session is still a real HMAC-signed, httpOnly cookie. Use a normal window plus an incognito window to be two users at once.
 
 ## Features
-- **Documents:** create, rename (owner), delete (owner), edit, reopen. The list is split into **Owned by me** and **Shared with me**, with an owner name and badge on each doc.
+- **Documents:** create, rename (owner), delete (owner), edit, reopen. The list is split into **Owned by me** and **Shared with me**: cards with a content preview, owner avatar, relative time and a Private / Shared / Can edit / Can view badge. A word count shows in the editor.
 - **Editor (TipTap):** Normal / H1 / H2, **bold**, *italic*, underline, bulleted and numbered lists, undo/redo, keyboard and Markdown shortcuts. Debounced autosave with a *Saving… / All changes saved / Not saved + Retry* status, and a warning before leaving with unsaved changes.
 - **File import:** `.txt`, `.md`, `.docx` (**max 2 MB**) become a new editable document, with headings, bold/italic/underline and lists preserved. Other types are rejected with a clear message.
-- **Sharing:** the owner shares by email with an existing user and can remove access. Shared users can read and edit. Only the owner can rename, share or delete.
+- **Sharing with roles:** the owner shares by email as **Can edit** or **Can view**, can change a role later, and can remove access. Viewers get a read-only editor. Only the owner can rename, share or delete. Avatars show who has access.
 - **Access control on the server:** strangers get **404** (a doc's existence is not revealed), collaborators trying owner-only actions get **403**, and requests without a valid session get **401**.
 
 ## Tech stack
@@ -44,8 +44,8 @@ npm run dev                 # http://localhost:3000
 
 ## Tests
 ```bash
-npm test             # 16 Vitest unit tests: permission rules + file import (incl. a real .docx fixture)
-npm run smoke:acl    # 13 HTTP access-control checks against a running server (BASE_URL defaults to localhost:3000)
+npm test             # 22 Vitest unit tests: permission rules, share-role validation, file import (incl. a real .docx fixture), UI helpers
+npm run smoke:acl    # 19 HTTP access-control checks (incl. viewer role) against a running server (BASE_URL defaults to localhost:3000)
 npm run lint && npx tsc --noEmit
 ```
 The manual test checklist is in [MANUAL_TESTS.md](MANUAL_TESTS.md).

@@ -62,3 +62,10 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **Rejected AI commit style:** AI wrote a long multi-line commit message with a "Co-Authored-By: Claude" trailer and pushed it. I stopped it and had it amended to a short one-line message (force-push guarded with an explicit lease on the old SHA). All later commits are one line.
 - **Secrets boundary:** I pasted DB connection strings into `.env` and Vercel myself; AI only generated the session secret locally and verified env *key names*, never values.
 - **Ran the full manual checklist myself** (`MANUAL_TESTS.md`, 8 areas, two browser windows for two users) — all passed after the Step 6 fix.
+
+## Step 8 — Stretch: viewer/editor roles + UI polish (extra 60-min block, ≈180–210 min)
+- **I chose** the role-based sharing stretch (the AI's recommendation: the backend and permission tests already supported `viewer`), and delegated the UI polish choices to the AI.
+- **Roles:** `shareSchema` takes `role: "editor" | "viewer"` (default editor; `owner` rejected). The share POST is an upsert, so it also changes roles. Share panel: role picker on add, per-person role dropdown, remove, avatars, closes on outside click/Esc. Viewers get a read-only editor (no toolbar, "You can view" badge, explanatory banner). List badges: Private / Shared · N / Can edit / Can view.
+- **UI polish (AI's picks):** login as clickable account cards with "what to test" hints; doc list as cards with content preview, owner avatar and relative time; editor header with word count, avatar stack and save-state colouring; header avatar.
+- **AI caught its own wording bug:** a viewer editing got "Only the owner can do that" → now "You have view-only access to this document".
+- **Verified:** 22 unit tests (+ role validation, helpers). Smoke test extended to 19 checks (grant viewer → page 200, edit 403, `role: owner` 400, revoke 204, then 404); all pass. Checked in Chrome as Alice (share panel) and as Bob with view access (`contenteditable=false`, no toolbar, read-only title, no Delete). Restored Bob to editor afterwards so the seed data is unchanged.

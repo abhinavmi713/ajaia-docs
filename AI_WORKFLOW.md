@@ -34,6 +34,6 @@ The detailed, timestamped log is in [NOTES.md](NOTES.md). This is the summary.
 - **Two false alarms were not "fixed":** a "bold doesn't work" result came from mis-aimed automated clicks, and an "Enter doesn't move focus" result came from automation typing too fast. Both were confirmed via DOM inspection before any code changed.
 
 ## How I verified correctness, UX and reliability
-- **Correctness:** 16 unit tests on the riskiest logic (permissions, import). The 13-check HTTP access-control smoke test passed against local and production (editor 200; owner-only actions 403; stranger 404; bad input 400; forged or missing cookie 401). `tsc` and eslint are clean on every step.
+- **Correctness:** 22 unit tests on the riskiest logic (permissions, roles, import). The 19-check HTTP access-control smoke test passed against local and production (editor 200; viewer edit and owner-only actions 403; stranger 404; bad input or `role: owner` 400; forged or missing cookie 401). `tsc` and eslint are clean on every step.
 - **UX:** I ran the full [MANUAL_TESTS.md](MANUAL_TESTS.md) checklist myself in two browser windows (Alice and Bob or Carol). That covers formatting, autosave status, reload persistence, sharing and revoking, the 404 page, import errors, and offline save failure with Retry.
 - **Reliability:** idempotent migrations and seed on every deploy; the autosave never runs two saves at once and keeps unsaved content on failure; the server re-validates everything the client checks.
