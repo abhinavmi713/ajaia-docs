@@ -2,6 +2,19 @@
 
 Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhinav) make the decisions and run/verify every step.
 
+## My role at a glance
+I treated the AI as a fast implementer and kept product, engineering and risk decisions with me.
+
+| Area | What I owned |
+|---|---|
+| **Working rules** | Set them before any code: 2 options + a recommendation for every meaningful choice, small runnable increments, a 10-minute debugging cap before switching to a simpler path, no paid services, no hard-coded secrets, and this log |
+| **Scope & time** | Set a hard 3 h budget (the brief allows 4–6 h) with a feature freeze at 140 min; chose what to cut (real-time editing, real auth, comments/history); later chose to spend a further 60-min block on one stretch feature and UI polish |
+| **Architecture decisions** | Chose the stack (Next.js + TipTap + Prisma + Neon on Vercel over Vite + Express + SQLite on Render), mocked auth with a signed cookie, debounced autosave, the share table with a `role` column, and testing a pure permission function |
+| **Infrastructure & secrets** | Created the Neon database, GitHub repo and Vercel project; pasted DB strings and the session secret into `.env` and Vercel myself; limited the Vercel GitHub App to this repo only; handled Vercel's identity check |
+| **Quality gate** | Ran the full `MANUAL_TESTS.md` checklist myself in two browser windows (two users); found the "Untitled document over a blank page" UX gap and sent it back for a fix; approved each step only after seeing it run |
+| **Review of AI output** | Rejected the AI's commit style and had history amended; reviewed and accepted Prisma 6 over 7; approved disabling `cacheComponents`; chose role-based sharing as the stretch |
+| **Communication** | Wrote the walkthrough plan with the AI and recorded the demo video against the live deployment |
+
 ---
 
 ## Step 0 — Scope & stack (≈0–10 min)
@@ -69,3 +82,8 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **UI polish (AI's picks):** login as clickable account cards with "what to test" hints; doc list as cards with content preview, owner avatar and relative time; editor header with word count, avatar stack and save-state colouring; header avatar.
 - **AI caught its own wording bug:** a viewer editing got "Only the owner can do that" → now "You have view-only access to this document".
 - **Verified:** 22 unit tests (+ role validation, helpers). Smoke test extended to 19 checks (grant viewer → page 200, edit 403, `role: owner` 400, revoke 204, then 404); all pass. Checked in Chrome as Alice (share panel) and as Bob with view access (`contenteditable=false`, no toolbar, read-only title, no Delete). Restored Bob to editor afterwards so the seed data is unchanged.
+
+## Step 9 — Docs, demo and submission (≈210–240 min)
+- **AI drafted** README, ARCHITECTURE, AI_WORKFLOW, SUBMISSION and a word-for-word video script; **I reviewed** them against what I had actually tested and kept the claims to what was verified (22 unit tests, 19 smoke checks, manual checklist).
+- **I decided** to record the demo on the live Vercel URL (what reviewers will use) and to show tests locally, after clearing my test docs so the seed state is clean.
+- **I recorded** the walkthrough and assembled the Drive folder: source zip (from `git archive`, so no `node_modules` or `.env`), docs and video.
