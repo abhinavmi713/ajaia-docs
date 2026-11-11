@@ -49,7 +49,7 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **Gotcha caught:** `ajaia-docs.vercel.app` is **someone else's** project (different page title). Real production URL: **https://ajaia-docs-two-omega.vercel.app**. Verified by content, not by assuming the name.
 - **Prod verification:** `BASE_URL=<prod> npm run smoke:acl` → all 13 access checks match in production.
 - **Import (`src/lib/import.ts`, `POST /api/import`):** `.txt` (blank line = paragraph, HTML-escaped), `.md` (marked → HTML), `.docx` (mammoth → HTML); all converted server-side with TipTap's `generateJSON` using the **same extension list as the editor**, so imported content always fits the schema and unknown HTML (script/iframe) is dropped. Limits: 2 MB, type allow-list, empty/binary detection; checked on client (fast feedback) and server (authoritative). UI states supported types under the button.
-- **Real bug found by a test:** mammoth silently drops underline by default → added `styleMap: ["u => u"]`. Built a real `.docx` fixture with JSZip (`scripts/make-docx-fixture.cjs`) instead of mocking mammoth.
+- **Real bug found by a test:** mammoth silently drops underline by default → added `styleMap: ["u => u"]`. Built a real `.docx` fixture with JSZip (`scripts/make-docx-fixture.mjs`) instead of mocking mammoth.
 - **Tests:** 16 passing (9 permission + 7 import incl. real docx, XSS-in-markdown, size/type errors). HTTP check of `/api/import`: docx/md → 201 with correct title + structure; png → 400; no file → 400; >2 MB → 413. Test docs deleted afterwards.
 - **Added:** owner-only Delete button in editor (confirm dialog). React Compiler lint caught a declaration-order issue → moved function below the refs.
 

@@ -1,6 +1,6 @@
 // Builds tests/fixtures/sample.docx (heading, bold/italic/underline, bullet list) with JSZip.
-const JSZip = require("jszip");
-const fs = require("fs");
+import JSZip from "jszip";
+import fs from "node:fs";
 const zip = new JSZip();
 zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">

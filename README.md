@@ -68,7 +68,7 @@ src/app/api/       REST routes: documents, shares, import
 src/app/           pages: /login, / (list), /docs/[id] (editor)
 src/components/    DocEditor, Toolbar, SharePanel, DocList, ImportButton
 tests/             Vitest tests + fixtures
-scripts/           smoke-acl.mjs (HTTP ACL checks), make-docx-fixture.cjs
+scripts/           smoke-acl.mjs (HTTP ACL checks), make-docx-fixture.mjs
 ```
 
 More detail: [ARCHITECTURE.md](ARCHITECTURE.md) · [AI_WORKFLOW.md](AI_WORKFLOW.md) · [SUBMISSION.md](SUBMISSION.md)
