@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
+import { Placeholder } from "@tiptap/extensions";
 import { editorExtensions } from "@/lib/editor-extensions";
 import { Toolbar } from "./Toolbar";
 import { SharePanel, type Person } from "./SharePanel";
@@ -29,6 +30,12 @@ export function DocEditor(props: {
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState(props.initialTitle);
   const savedTitle = useRef(props.initialTitle);
+  const titleInput = useRef<HTMLInputElement>(null);
+
+  // New documents: put the cursor in the title so the user names it first (like Google Docs).
+  useEffect(() => {
+    if (isOwner && props.initialTitle === "Untitled document") titleInput.current?.select();
+  }, [isOwner, props.initialTitle]);
 
   // Autosave: debounce edits, never run two saves at once, and always save the latest content.
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,7 +78,10 @@ export function DocEditor(props: {
   }
 
   const editor = useEditor({
-    extensions: editorExtensions,
+    extensions: [
+      ...editorExtensions,
+      Placeholder.configure({ placeholder: canEdit ? "Start typing your document…" : "This document is empty." }),
+    ],
     content: props.initialContent,
     editable: canEdit,
     immediatelyRender: false, // required with SSR
@@ -142,15 +152,22 @@ export function DocEditor(props: {
           <Link href="/" title="Back to documents" className="w-6 h-7 rounded-sm bg-blue-600 shrink-0" />
           <div className="flex-1 min-w-48">
             <input
+              ref={titleInput}
+              placeholder="Untitled document"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={saveTitle}
-              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                (e.target as HTMLInputElement).blur(); // triggers saveTitle
+                setTimeout(() => editor?.commands.focus("start"), 0);
+              }}
               readOnly={!isOwner}
               maxLength={200}
               aria-label="Document title"
               title={isOwner ? "Rename document" : "Only the owner can rename"}
-              className="w-full text-lg font-medium text-slate-900 bg-transparent px-1 rounded border border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none read-only:hover:border-transparent"
+              className="w-full text-lg font-medium text-slate-900 bg-transparent px-1 rounded border border-transparent border-dashed hover:border-slate-300 focus:border-solid focus:border-blue-500 focus:outline-none read-only:hover:border-transparent"
             />
             <div className="px-1 text-xs text-slate-500 flex gap-2">
               <span className={status === "error" ? "text-red-600" : ""} role="status">

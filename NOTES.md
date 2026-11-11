@@ -52,3 +52,8 @@ Tool: Claude Code (Opus) as pair-programmer, in the Claude desktop app. I (Abhin
 - **Real bug found by a test:** mammoth silently drops underline by default → added `styleMap: ["u => u"]`. Built a real `.docx` fixture with JSZip (`scripts/make-docx-fixture.cjs`) instead of mocking mammoth.
 - **Tests:** 16 passing (9 permission + 7 import incl. real docx, XSS-in-markdown, size/type errors). HTTP check of `/api/import`: docx/md → 201 with correct title + structure; png → 400; no file → 400; >2 MB → 413. Test docs deleted afterwards.
 - **Added:** owner-only Delete button in editor (confirm dialog). React Compiler lint caught a declaration-order issue → moved function below the refs.
+
+## Step 6 — UX fix from my manual testing (≈120–130 min)
+- **I reported:** a new doc showed "Untitled document" and an empty page with no cue to name it or start typing.
+- **Fix:** new docs auto-focus + select the title (type a name immediately); Enter in the title saves it and moves the cursor into the body; dashed hover border signals the title is editable; body placeholder "Start typing your document…" via TipTap `Placeholder` (client-only, not part of the stored schema).
+- **Verified in Chrome:** new doc → title focused and fully selected; typed name + Enter → title saved, focus in body, body text autosaved. An apparent failure was the automation typing before the deferred focus — confirmed via `document.activeElement` before changing anything else.

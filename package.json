@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@tiptap/extensions": "^3.33.1",
     "@tiptap/html": "^3.33.1",
     "@tiptap/pm": "^3.33.1",
     "@tiptap/react": "^3.33.1",
