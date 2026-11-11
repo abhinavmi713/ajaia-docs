@@ -18,8 +18,12 @@ export const updateDocSchema = z
   .object({ title: titleSchema.optional(), content: contentSchema.optional() })
   .refine((d) => d.title !== undefined || d.content !== undefined, "Nothing to update");
 
+export const SHARE_ROLES = ["editor", "viewer"] as const;
+export type ShareRole = (typeof SHARE_ROLES)[number];
+
 export const shareSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  role: z.enum(SHARE_ROLES, { message: "Role must be editor or viewer" }).default("editor"),
 });
 
 export const EMPTY_DOC = { type: "doc", content: [{ type: "paragraph" }] };

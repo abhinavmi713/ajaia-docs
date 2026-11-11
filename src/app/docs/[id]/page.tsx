@@ -37,7 +37,7 @@ export default async function DocPage({ params }: Props) {
       initialContent={doc.content as JSONContent}
       role={role}
       owner={person(doc.owner)}
-      sharedWith={doc.shares.map((s) => person(s.user))}
+      sharedWith={doc.shares.map((s) => ({ ...person(s.user), role: s.role === "viewer" ? ("viewer" as const) : ("editor" as const) }))}
     />
   );
 }

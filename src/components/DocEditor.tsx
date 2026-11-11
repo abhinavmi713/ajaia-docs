@@ -8,10 +8,13 @@ import { Placeholder } from "@tiptap/extensions";
 import { editorExtensions } from "@/lib/editor-extensions";
 import { Toolbar } from "./Toolbar";
 import { SharePanel, type Person } from "./SharePanel";
+import { Avatar } from "./Avatar";
 
 type SaveStatus = "saved" | "unsaved" | "saving" | "error";
 
 const AUTOSAVE_MS = 800;
+
+const countWords = (text: string) => (text.trim() ? text.trim().split(/s+/).length : 0);
 
 export function DocEditor(props: {
   id: string;
@@ -31,6 +34,8 @@ export function DocEditor(props: {
   const [title, setTitle] = useState(props.initialTitle);
   const savedTitle = useRef(props.initialTitle);
   const titleInput = useRef<HTMLInputElement>(null);
+  const [people, setPeople] = useState<Person[]>(props.sharedWith);
+  const [words, setWords] = useState(0);
 
   // New documents: put the cursor in the title so the user names it first (like Google Docs).
   useEffect(() => {
@@ -86,7 +91,9 @@ export function DocEditor(props: {
     editable: canEdit,
     immediatelyRender: false, // required with SSR
     editorProps: { attributes: { class: "doc-content", "aria-label": "Document content" } },
+    onCreate: ({ editor: e }) => setWords(countWords(e.getText())),
     onUpdate: ({ editor: e }) => {
+      setWords(countWords(e.getText()));
       pending.current = e.getJSON();
       setStatus("unsaved");
       schedule();
@@ -169,11 +176,21 @@ export function DocEditor(props: {
               title={isOwner ? "Rename document" : "Only the owner can rename"}
               className="w-full text-lg font-medium text-slate-900 bg-transparent px-1 rounded border border-transparent border-dashed hover:border-slate-300 focus:border-solid focus:border-blue-500 focus:outline-none read-only:hover:border-transparent"
             />
-            <div className="px-1 text-xs text-slate-500 flex gap-2">
-              <span className={status === "error" ? "text-red-600" : ""} role="status">
-                {canEdit ? statusText[status] : "View only"}
+            <div className="px-1 text-xs text-slate-500 flex flex-wrap items-center gap-x-2">
+              <span className={status === "error" ? "text-red-600" : status === "saved" ? "" : "text-amber-700"} role="status">
+                {canEdit ? statusText[status] : "Read-only"}
               </span>
+              <span>· {words} {words === 1 ? "word" : "words"}</span>
               {!isOwner && <span>· Owned by {props.owner.name}</span>}
+              {!isOwner && (
+                <span
+                  className={`rounded-full px-2 py-0.5 font-medium ${
+                    canEdit ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {canEdit ? "You can edit" : "You can view"}
+                </span>
+              )}
             </div>
           </div>
           {isOwner && (
@@ -181,7 +198,17 @@ export function DocEditor(props: {
               Delete
             </button>
           )}
-          <SharePanel docId={id} isOwner={isOwner} owner={props.owner} initialShared={props.sharedWith} />
+          <div className="hidden sm:flex -space-x-2" aria-label="People with access">
+            {[props.owner, ...people].slice(0, 4).map((p) => (
+              <Avatar key={p.id} name={p.name} id={p.id} size="sm" />
+            ))}
+            {people.length > 3 && (
+              <span className="w-6 h-6 rounded-full bg-slate-200 text-[10px] flex items-center justify-center ring-2 ring-white">
+                +{people.length - 3}
+              </span>
+            )}
+          </div>
+          <SharePanel docId={id} isOwner={isOwner} owner={props.owner} initialShared={props.sharedWith} onChange={setPeople} />
         </div>
         {error && (
           <div className="bg-red-50 text-red-700 text-sm px-4 py-2 text-center" role="alert">
@@ -191,6 +218,11 @@ export function DocEditor(props: {
                 Retry
               </button>
             )}
+          </div>
+        )}
+        {!canEdit && (
+          <div className="bg-slate-50 text-slate-600 text-sm px-4 py-1.5 text-center border-t border-slate-200">
+            You have view-only access. Ask {props.owner.name} for edit access.
           </div>
         )}
         {editor && canEdit && (

@@ -31,4 +31,12 @@ await req("alice share bad email             ->400", A, "POST", `/api/documents/
 await req("alice share with herself          ->400", A, "POST", `/api/documents/${id}/shares`, { email: "alice@demo.com" });
 await req("no cookie                         ->401", "", "PATCH", `/api/documents/${id}`, { title: "x" });
 await req("forged cookie                     ->401", "ajaia_session=abc.def.ghi", "PATCH", `/api/documents/${id}`, { title: "x" });
+// Viewer role: grant Carol view access, check read-only, then revoke (leaves seed data unchanged).
+await req("alice grants carol viewer         ->201", A, "POST", `/api/documents/${id}/shares`, { email: "carol@demo.com", role: "viewer" });
+await req("carol (viewer) opens page         ->200", C, "GET", `/docs/${id}`);
+await req("carol (viewer) edits content      ->403", C, "PATCH", `/api/documents/${id}`, { content: welcome.content });
+await req("alice grants role owner           ->400", A, "POST", `/api/documents/${id}/shares`, { email: "carol@demo.com", role: "owner" });
+const carol = await p.user.findUniqueOrThrow({ where: { email: "carol@demo.com" } });
+await req("alice revokes carol               ->204", A, "DELETE", `/api/documents/${id}/shares?userId=${carol.id}`);
+await req("carol after revoke                ->404", C, "PATCH", `/api/documents/${id}`, { content: welcome.content });
 await p.$disconnect();

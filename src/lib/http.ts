@@ -47,6 +47,7 @@ export async function loadDocFor(docId: string, userId: string, action: Action) 
   });
   const status = denialStatus(userId, doc, action);
   if (status === 404) throw new HttpError(404, "Document not found");
-  if (status === 403) throw new HttpError(403, "Only the owner can do that");
+  if (status === 403)
+    throw new HttpError(403, action === "edit" ? "You have view-only access to this document" : "Only the owner can do that");
   return doc!;
 }

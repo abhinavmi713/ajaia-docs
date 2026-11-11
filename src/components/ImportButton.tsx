@@ -47,7 +47,7 @@ export function ImportButton() {
         {busy ? "Importing…" : "Import file"}
       </button>
       <input ref={input} type="file" accept={ACCEPT} onChange={onChange} className="hidden" aria-label="Import file" />
-      <p className="text-xs text-slate-500 mt-1">.txt, .md or .docx · max 2 MB</p>
+      <p className="text-xs text-slate-500 mt-1 text-center w-full">.txt · .md · .docx · max 2 MB</p>
       {error && <p className="text-sm text-red-600 mt-1" role="alert">{error}</p>}
     </div>
   );

@@ -5,11 +5,12 @@ import { shareSchema } from "@/lib/validation";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// POST /api/documents/:id/shares  { email }  (owner only)
+// POST /api/documents/:id/shares  { email, role? }  (owner only)
+// Adds a collaborator, or changes the role of an existing one (upsert).
 export const POST = handle(async (req: Request, { params }: Ctx) => {
   const user = await requireApiUser();
   const { id } = await params;
-  const { email } = shareSchema.parse(await req.json().catch(() => null));
+  const { email, role } = shareSchema.parse(await req.json().catch(() => null));
   const doc = await loadDocFor(id, user.id, "share");
 
   const target = await prisma.user.findUnique({ where: { email } });
@@ -18,10 +19,13 @@ export const POST = handle(async (req: Request, { params }: Ctx) => {
 
   await prisma.documentShare.upsert({
     where: { documentId_userId: { documentId: id, userId: target.id } },
-    update: {},
-    create: { documentId: id, userId: target.id, role: "editor" },
+    update: { role },
+    create: { documentId: id, userId: target.id, role },
   });
-  return NextResponse.json({ user: { id: target.id, name: target.name, email: target.email } }, { status: 201 });
+  return NextResponse.json(
+    { user: { id: target.id, name: target.name, email: target.email, role } },
+    { status: 201 },
+  );
 });
 
 // DELETE /api/documents/:id/shares?userId=...  (owner only) — revoke access
